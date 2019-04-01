@@ -24,26 +24,14 @@ func main() {
 
 
 	w := app.NewWindow("Productive")
-	w.SetContent(widget.NewVBox(
-		widget.NewLabel("What task are you working on?"),
-    widget.NewEntry(),
+  f := widget.NewForm()
+  f.Append("What task are you working on?", widget.NewEntry())
+	f.Append("How would you categorize this task?", widget.NewRadio(tasks, nil))
+	f.Append("Are you enjoying this task?", widget.NewRadio(rating, nil))
+	f.Append("Do you find this task impactful?", widget.NewRadio(rating, nil))
+	f.Append("Comments", widget.NewMultiLineEntry())
+  f.Append("", widget.NewButton("Submit", nil))
 
-		widget.NewLabel("How would you categorize this task?"),
-    widget.NewRadio(tasks, nil),
-
-    widget.NewLabel("Are you enjoying this task?"),
-    widget.NewRadio(rating, nil),
-
-    widget.NewLabel("Do you find this task impactful?"),
-    widget.NewRadio(rating, nil),
-
-    widget.NewLabel("Comments"),
-    widget.NewMultiLineEntry(),
-
-		widget.NewButton("Submit", func() {
-			app.Quit()
-		}),
-	))
-
+	w.SetContent(f)
 	w.ShowAndRun()
 }
