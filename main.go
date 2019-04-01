@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/widget"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
@@ -49,7 +50,10 @@ func main() {
 				impact.Selected,
 				comments.Text,
 			})
-			w.Close()
+
+			w.Hide()
+			time.Sleep(2 * time.Hour)
+			w.RequestFocus()
 		},
 		OnCancel: func() {
 			w.Close()
@@ -62,5 +66,6 @@ func main() {
 	f.Append("Comments", comments)
 
 	w.SetContent(f)
+	w.CenterOnScreen()
 	w.ShowAndRun()
 }
