@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"fyne.io/fyne"
 	"fyne.io/fyne/app"
 	"fyne.io/fyne/widget"
 	"log"
@@ -9,8 +10,21 @@ import (
 	"time"
 )
 
+var categories = []string{
+	"Clerical",
+	"Internal meeting / conference call",
+	"External meeting / conference call",
+	"Constituent meeting / call",
+	"Outreach",
+	"Project",
+	"Graphics",
+	"Non-work",
+	"Other",
+}
+
+var rating = []string{"1", "2", "3", "4", "5"}
+
 func main() {
-	app := app.New()
 	logfile, err := os.OpenFile("results.csv", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
 		log.Fatal("Cannot create file", err)
@@ -28,27 +42,19 @@ func main() {
 		writer.Write([]string{"time", "task", "category", "enjoy", "impact", "comments"})
 	}
 
-	categories := []string{
-		"Clerical",
-		"Internal meeting / conference call",
-		"External meeting / conference call",
-		"Constituent meeting / call",
-		"Outreach",
-		"Project",
-		"Graphics",
-		"Non-work",
-		"Other",
-	}
+	w := app.New().NewWindow("Productive")
+	w.SetContent(newForm(w, writer))
+	w.CenterOnScreen()
+	w.ShowAndRun()
+}
 
-	rating := []string{"1", "2", "3", "4", "5"}
-
+func newForm(window fyne.Window, writer *csv.Writer) fyne.CanvasObject {
 	task := widget.NewEntry()
 	category := widget.NewRadio(categories, nil)
 	enjoy := widget.NewRadio(rating, nil)
 	impact := widget.NewRadio(rating, nil)
 	comments := widget.NewMultiLineEntry()
 
-	w := app.NewWindow("Productive")
 	f := &widget.Form{
 		OnSubmit: func() {
 			writer.Write([]string{
@@ -61,21 +67,21 @@ func main() {
 			})
 			writer.Flush()
 
-			w.Hide()
-			time.Sleep(2 * time.Hour)
-			w.RequestFocus()
+			window.Hide()
+			time.Sleep(2 * time.Second)
+			window.SetContent(newForm(window, writer))
+			window.RequestFocus()
 		},
 		OnCancel: func() {
-			w.Close()
+			window.Close()
 		},
 	}
+
 	f.Append("What task are you working on?", task)
 	f.Append("How would you categorize this task?", category)
 	f.Append("Are you enjoying this task?", enjoy)
 	f.Append("Do you find this task impactful?", impact)
 	f.Append("Comments", comments)
 
-	w.SetContent(f)
-	w.CenterOnScreen()
-	w.ShowAndRun()
+	return f
 }
