@@ -11,7 +11,7 @@ import (
 
 func main() {
 	app := app.New()
-	logfile, err := os.Create("results.csv")
+	logfile, err := os.OpenFile("results.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal("Cannot create file", err)
 	}
@@ -44,6 +44,7 @@ func main() {
 	f := &widget.Form{
 		OnSubmit: func() {
 			writer.Write([]string{
+				time.Now().Format(time.UnixDate),
 				task.Text,
 				category.Selected,
 				enjoy.Selected,
