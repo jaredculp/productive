@@ -57,6 +57,7 @@ func newForm(window fyne.Window, writer *csv.Writer) fyne.CanvasObject {
 
 	f := &widget.Form{
 		OnSubmit: func() {
+			log.Println("Form submitted")
 			writer.Write([]string{
 				time.Now().Format(time.UnixDate),
 				task.Text,
@@ -69,10 +70,12 @@ func newForm(window fyne.Window, writer *csv.Writer) fyne.CanvasObject {
 
 			window.Hide()
 			time.Sleep(2 * time.Second)
+			log.Println("Refreshing form")
 			window.SetContent(newForm(window, writer))
 			window.RequestFocus()
 		},
 		OnCancel: func() {
+			log.Println("Form cancelled")
 			window.Close()
 		},
 	}
