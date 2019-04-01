@@ -11,7 +11,7 @@ import (
 
 func main() {
 	app := app.New()
-	logfile, err := os.OpenFile("results.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logfile, err := os.OpenFile("results.csv", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
 		log.Fatal("Cannot create file", err)
 	}
