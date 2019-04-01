@@ -41,6 +41,7 @@ func main() {
     },
     OnCancel: func() {
       fmt.Println("Cancelled")
+      w.Close()
     },
   }
 	f.Append("What task are you working on?", task)
