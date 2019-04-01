@@ -23,46 +23,32 @@ func main() {
 
 	rating := []string{"1", "2", "3", "4", "5"}
 
-	task := &widget.FormItem{
-		Text:   "What task are you working on?",
-		Widget: widget.NewEntry(),
-	}
-
-	category := &widget.FormItem{
-		Text:   "How would you categorize this task?",
-		Widget: widget.NewRadio(categories, nil),
-	}
-
-	enjoy := &widget.FormItem{
-		Text:   "Are you enjoying this task?",
-		Widget: widget.NewRadio(rating, nil),
-	}
-
-	impact := &widget.FormItem{
-		Text:   "Do you find this task impactful?",
-		Widget: widget.NewRadio(rating, nil),
-	}
-
-	comments := &widget.FormItem{
-		Text:   "Comments",
-		Widget: widget.NewMultiLineEntry(),
-	}
+	task := widget.NewEntry()
+	category := widget.NewRadio(categories, nil)
+	enjoy := widget.NewRadio(rating, nil)
+	impact := widget.NewRadio(rating, nil)
+	comments := widget.NewMultiLineEntry()
 
 	w := app.NewWindow("Productive")
 	f := &widget.Form{
-		Items:    []*widget.FormItem{task, category, enjoy, impact, comments},
-		OnSubmit: onSubmit,
-		OnCancel: onCancel,
-	}
+    OnSubmit: func() {
+      fmt.Println("Submitted")
+      fmt.Println(task.Text)
+      fmt.Println(category.Selected)
+      fmt.Println(enjoy.Selected)
+      fmt.Println(impact.Selected)
+      fmt.Println(comments.Text)
+    },
+    OnCancel: func() {
+      fmt.Println("Cancelled")
+    },
+  }
+	f.Append("What task are you working on?", task)
+	f.Append("How would you categorize this task?", category)
+	f.Append("Are you enjoying this task?", enjoy)
+	f.Append("Do you find this task impactful?", impact)
+	f.Append("Comments", comments)
 
 	w.SetContent(f)
 	w.ShowAndRun()
-}
-
-func onSubmit() {
-	fmt.Println("Submitted")
-}
-
-func onCancel() {
-	fmt.Println("Cancelled")
 }
