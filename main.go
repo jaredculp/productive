@@ -20,6 +20,14 @@ func main() {
 	writer := csv.NewWriter(logfile)
 	defer writer.Flush()
 
+	lines, err := csv.NewReader(logfile).ReadAll()
+	if err != nil {
+		log.Fatal("Cannot read file", err)
+	}
+	if len(lines) == 0 {
+		writer.Write([]string{"time", "task", "category", "enjoy", "impact", "comments"})
+	}
+
 	categories := []string{
 		"Clerical",
 		"Internal meeting / conference call",
@@ -51,6 +59,7 @@ func main() {
 				impact.Selected,
 				comments.Text,
 			})
+			writer.Flush()
 
 			w.Hide()
 			time.Sleep(2 * time.Hour)
