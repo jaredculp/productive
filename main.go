@@ -1,13 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"encoding/csv"
 	"fyne.io/fyne/app"
 	"fyne.io/fyne/widget"
+	"log"
+	"os"
 )
 
 func main() {
 	app := app.New()
+	logfile, err := os.Create("results.csv")
+	if err != nil {
+		log.Fatal("Cannot create file", err)
+	}
+	defer logfile.Close()
+
+	writer := csv.NewWriter(logfile)
+	defer writer.Flush()
 
 	categories := []string{
 		"Clerical",
@@ -31,19 +41,20 @@ func main() {
 
 	w := app.NewWindow("Productive")
 	f := &widget.Form{
-    OnSubmit: func() {
-      fmt.Println("Submitted")
-      fmt.Println(task.Text)
-      fmt.Println(category.Selected)
-      fmt.Println(enjoy.Selected)
-      fmt.Println(impact.Selected)
-      fmt.Println(comments.Text)
-    },
-    OnCancel: func() {
-      fmt.Println("Cancelled")
-      w.Close()
-    },
-  }
+		OnSubmit: func() {
+			writer.Write([]string{
+				task.Text,
+				category.Selected,
+				enjoy.Selected,
+				impact.Selected,
+				comments.Text,
+			})
+			w.Close()
+		},
+		OnCancel: func() {
+			w.Close()
+		},
+	}
 	f.Append("What task are you working on?", task)
 	f.Append("How would you categorize this task?", category)
 	f.Append("Are you enjoying this task?", enjoy)
