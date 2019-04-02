@@ -36,7 +36,6 @@ func main() {
 	defer logfile.Close()
 
 	writer := csv.NewWriter(logfile)
-	defer writer.Flush()
 
 	lines, err := csv.NewReader(logfile).ReadAll()
 	if err != nil {
@@ -59,18 +58,18 @@ func prompt(writer *csv.Writer) {
     end()
   }
 
-  category, answer, _ := dlgs.List(title, "How would you categorize this task?", categories)
-  if !answer {
+  category, _, _ := dlgs.List(title, "How would you categorize this task?", categories)
+  if category == "false" {
     end()
   }
 
-  enjoy, answer, _ := dlgs.List(title, "Are you enjoying this task?", rating)
-  if !answer {
+  enjoy, _, _ := dlgs.List(title, "Are you enjoying this task?", rating)
+  if enjoy == "false" {
     end()
   }
 
-  impact, answer, _ := dlgs.List(title, "Do you find this task impactful?", rating)
-  if !answer {
+  impact, _, _ := dlgs.List(title, "Do you find this task impactful?", rating)
+  if impact == "false" {
     end()
   }
 
@@ -82,10 +81,11 @@ func prompt(writer *csv.Writer) {
   timestamp := time.Now().Format(time.UnixDate)
 
   writer.Write([]string{timestamp, task, category, enjoy, impact, comment})
+  writer.Flush()
   time.Sleep(2 * time.Second)
 }
 
 func end() {
   log.Println("Ending app")
-  os.Exit(1)
+  os.Exit(0)
 }
