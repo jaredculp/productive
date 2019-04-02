@@ -4,9 +4,9 @@ import (
 	"encoding/csv"
 	"log"
 	"os"
-  "time"
+	"time"
 
-  "github.com/gen2brain/dlgs"
+	"github.com/gen2brain/dlgs"
 )
 
 const title = "Productive"
@@ -36,6 +36,7 @@ func main() {
 	defer logfile.Close()
 
 	writer := csv.NewWriter(logfile)
+	defer writer.Flush()
 
 	lines, err := csv.NewReader(logfile).ReadAll()
 	if err != nil {
@@ -45,47 +46,34 @@ func main() {
 		writer.Write(header)
 	}
 
-  for {
-    prompt(writer)
-  }
+	done := make(chan bool, 1)
+	for {
+		select {
+		case <-done:
+			return
+		default:
+			prompt(done, writer)
+		}
+	}
 }
 
-func prompt(writer *csv.Writer) {
-  var answer bool
+func prompt(done chan bool, writer *csv.Writer) {
+	log.Println("Prompting")
 
-  task, answer, _ := dlgs.Entry(title, "What task are you working on?", "")
-  if !answer {
-    end()
-  }
+	task, _, _ := dlgs.Entry(title, "What task are you working on?", "")
+	category, _, _ := dlgs.List(title, "How would you categorize this task?", categories)
+	enjoy, _, _ := dlgs.List(title, "Are you enjoying this task?", rating)
+	impact, _, _ := dlgs.List(title, "Do you find this task impactful?", rating)
+	comment, _, _ := dlgs.Entry(title, "Comments", "")
+	again, _ := dlgs.Question(title, "Do you want to continue?", false)
 
-  category, _, _ := dlgs.List(title, "How would you categorize this task?", categories)
-  if category == "false" {
-    end()
-  }
+	timestamp := time.Now().Format(time.UnixDate)
 
-  enjoy, _, _ := dlgs.List(title, "Are you enjoying this task?", rating)
-  if enjoy == "false" {
-    end()
-  }
+	writer.Write([]string{timestamp, task, category, enjoy, impact, comment})
 
-  impact, _, _ := dlgs.List(title, "Do you find this task impactful?", rating)
-  if impact == "false" {
-    end()
-  }
-
-  comment, answer, _ := dlgs.Entry(title, "Comments", "")
-  if !answer {
-    end()
-  }
-
-  timestamp := time.Now().Format(time.UnixDate)
-
-  writer.Write([]string{timestamp, task, category, enjoy, impact, comment})
-  writer.Flush()
-  time.Sleep(2 * time.Second)
-}
-
-func end() {
-  log.Println("Ending app")
-  os.Exit(0)
+	if !again {
+		done <- true
+	} else {
+		time.Sleep(2 * time.Hour)
+	}
 }
