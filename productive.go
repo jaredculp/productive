@@ -2,13 +2,17 @@ package main
 
 import (
 	"encoding/csv"
-	"fyne.io/fyne"
-	"fyne.io/fyne/app"
-	"fyne.io/fyne/widget"
 	"log"
 	"os"
-	"time"
+  "time"
+
+  "github.com/gen2brain/dlgs"
 )
+
+const title = "Productive"
+const output = "results.csv"
+
+var header = []string{"time", "task", "category", "enjoy", "impact", "comments"}
 
 var categories = []string{
 	"Clerical",
@@ -25,7 +29,7 @@ var categories = []string{
 var rating = []string{"1", "2", "3", "4", "5"}
 
 func main() {
-	logfile, err := os.OpenFile("results.csv", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0600)
+	logfile, err := os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
 		log.Fatal("Cannot create file", err)
 	}
@@ -39,52 +43,49 @@ func main() {
 		log.Fatal("Cannot read file", err)
 	}
 	if len(lines) == 0 {
-		writer.Write([]string{"time", "task", "category", "enjoy", "impact", "comments"})
+		writer.Write(header)
 	}
 
-	w := app.New().NewWindow("Productive")
-	w.SetContent(newForm(w, writer))
-	w.CenterOnScreen()
-	w.ShowAndRun()
+  for {
+    prompt(writer)
+  }
 }
 
-func newForm(window fyne.Window, writer *csv.Writer) fyne.CanvasObject {
-	task := widget.NewEntry()
-	category := widget.NewRadio(categories, nil)
-	enjoy := widget.NewRadio(rating, nil)
-	impact := widget.NewRadio(rating, nil)
-	comments := widget.NewMultiLineEntry()
+func prompt(writer *csv.Writer) {
+  var answer bool
 
-	f := &widget.Form{
-		OnSubmit: func() {
-			log.Println("Form submitted")
-			writer.Write([]string{
-				time.Now().Format(time.UnixDate),
-				task.Text,
-				category.Selected,
-				enjoy.Selected,
-				impact.Selected,
-				comments.Text,
-			})
-			writer.Flush()
+  task, answer, _ := dlgs.Entry(title, "What task are you working on?", "")
+  if !answer {
+    end()
+  }
 
-			window.Hide()
-			time.Sleep(2 * time.Second)
-			log.Println("Refreshing form")
-			window.SetContent(newForm(window, writer))
-			window.RequestFocus()
-		},
-		OnCancel: func() {
-			log.Println("Form cancelled")
-			window.Close()
-		},
-	}
+  category, answer, _ := dlgs.List(title, "How would you categorize this task?", categories)
+  if !answer {
+    end()
+  }
 
-	f.Append("What task are you working on?", task)
-	f.Append("How would you categorize this task?", category)
-	f.Append("Are you enjoying this task?", enjoy)
-	f.Append("Do you find this task impactful?", impact)
-	f.Append("Comments", comments)
+  enjoy, answer, _ := dlgs.List(title, "Are you enjoying this task?", rating)
+  if !answer {
+    end()
+  }
 
-	return f
+  impact, answer, _ := dlgs.List(title, "Do you find this task impactful?", rating)
+  if !answer {
+    end()
+  }
+
+  comment, answer, _ := dlgs.Entry(title, "Comments", "")
+  if !answer {
+    end()
+  }
+
+  timestamp := time.Now().Format(time.UnixDate)
+
+  writer.Write([]string{timestamp, task, category, enjoy, impact, comment})
+  time.Sleep(2 * time.Second)
+}
+
+func end() {
+  log.Println("Ending app")
+  os.Exit(1)
 }
