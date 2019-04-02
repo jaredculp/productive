@@ -74,6 +74,6 @@ func prompt(done chan bool, writer *csv.Writer) {
 	if !again {
 		done <- true
 	} else {
-		time.Sleep(2 * time.Hour)
+		time.Sleep(1 * time.Hour)
 	}
 }
